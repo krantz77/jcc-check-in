@@ -3,7 +3,7 @@ import logo from './logo.png';
 import './App.css';
 import MyDropzone, {IDropzoneProps} from "./Components/MyDropzone";
 import _ from "lodash"
-import {checkIn, formatData} from "./Utils/DataTable.util";
+import {checkIn, formatData, setDataToFormatted} from "./Utils/DataTable.util";
 import {IRow} from "./Interfaces/interfaces";
 import DataTable from "lucid-ui/dist/esm/components/DataTable/DataTable";
 
@@ -14,15 +14,13 @@ function App() {
     const [selected, setSelected]= useState(-1);
     var key = 0;
 
-    // const columnNames = data.rows? _.map(data.rows[0], (col) => {
-    //     return {column: col, key: key+1}}) : data.cols;
+    const columnNames = data.rows? _.map(data.rows[0], (col) => {
+       return {column: col, key: col}}) : data.cols;
+
     const selectColumn= (index: IRow) => {
-        console.log(index)
         setSelected(index.id);
         setShowButtons(!showButtons)
     }
-    console.log(data)
-
     return (
     <div className="App">
       <header className="App-header">
@@ -33,28 +31,32 @@ function App() {
       </header>
         <div className="Grid-Header">
             {showButtons &&
-            <button onClick={() => checkIn(selected, data.rows as IRow[], setData as (data: {}) => {})}>
+            <button onClick={() => checkIn(selected, dataFormatted as IRow[], setDataFormatted as (data: {}) => {})}>
                 check in
             </button>}
         </div>
         <div className="App-Body">
             <p>
-                <MyDropzone set={setData}/>
+                <MyDropzone set={(data) => setDataToFormatted(data, setDataFormatted as unknown as any)}/>
                 <div  className="data-table">
-                {data ? (
+                {dataFormatted ? (
                     <DataTable
-                        data={formatData(data.rows? data.rows: data, )}
+                        data={dataFormatted}
                         isSelectable
                         onSelect={(index) => selectColumn(index)}
                     >
-                        {
-                            _.map(data.rows[0], (col: string) => {
-                            return (
-                                <DataTable.Column field={col}>
-                                    {col}
-                                </DataTable.Column>
-                            )})
-                        }
+                        <DataTable.Column field={'id'}>
+                            Id
+                        </DataTable.Column>
+                        <DataTable.Column field={'householdMembers'}>
+                            Household Members
+                        </DataTable.Column>
+                        <DataTable.Column field={'lastVisit'}>
+                            Last visit
+                        </DataTable.Column>
+                        <DataTable.Column field={'visitedInLastWeek'}>
+                            Visited This Week
+                        </DataTable.Column>
                     </DataTable>
                 ) : (
                     ""

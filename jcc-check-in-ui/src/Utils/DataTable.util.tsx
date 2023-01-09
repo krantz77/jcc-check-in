@@ -1,6 +1,11 @@
 import {IRow} from "../Interfaces/interfaces"
 import _ from "lodash";
+import { format } from 'date-fns'
 
+
+export const setDataToFormatted = (data: IRow[], setDataFormatted: (value: unknown[]) => void) => {
+    setDataFormatted(formatData(data as any));
+}
 const checkLastVisit = (date: string) => {
     console.log(new Date())
     const today = new Date().getTime();
@@ -10,7 +15,7 @@ const checkLastVisit = (date: string) => {
 }
 export const formatData = (rows: any, setDataFormatted?: any) => {
     console.log(rows)
-        const data: IRow[] = _.map(rows, (row) => {
+        const data: IRow[] = _.map(rows.rows, (row) => {
             return {
                 id: row[0] ? row[0] : -1,
                 householdMembers: row[1] ? row[1] : [],
@@ -27,22 +32,22 @@ export const formatData = (rows: any, setDataFormatted?: any) => {
         return _.drop(data)
 };
 
-export const checkIn = (id: number, data: any, setData: (data: { rows: unknown[] }) => {})=> {
+export const checkIn = (id: number, data: any, setDataFormatted: (data: unknown[]) => {})=> {
     console.log(data)
    const result =_.map(data, (row) => {
        console.log(row)
-        if(row[0] == id) {
+        if(row.id == id) {
             console.log('here')
             return {
-                id: row[0],
-                householdMembers:[row[1]],
-                lastVisit: new Date().toString(),
+                id: row.id,
+                householdMembers:[row.householdMembers],
+                lastVisit: format(new Date(), 'yyyy-MM-dd'),
                 visitedInLastWeek: 'Yes',
             }
         }
         return row
     })
     console.log(result)
-    setData({rows: result})
+    setDataFormatted(result)
 }
 
