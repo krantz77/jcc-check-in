@@ -2,15 +2,10 @@
   text-align: center;
 }
 
-/*.App-logo {*/
-/*  height: 40vmin;*/
-/*  pointer-events: none;*/
-/*}*/
-
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
-    max-width:15%;
+    max-width:8%;
     height:auto;
   }
 }
@@ -21,7 +16,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: calc(10px + 7vmin);
+  font-size: calc(10px + 6vmin);
   color: white;
 }
 
@@ -41,6 +36,8 @@
 .App-Body .data-table {
   background-color: white;
   color: black;
+  font-size:14px;
+  scroll-behavior: auto;
 }
 
 .App-link {
@@ -56,4 +53,55 @@
   }
 }
 
+.lucid-Overlay .main-content {
+  position: absolute;
+  top: 75%;
+  left: 50%;
+  background-color: white;
+  z-index: 1002;
+  overflow: auto;
+  width: 400px;
+  height: 200px;
+  margin-left: -200px;
+  margin-top: -200px;
+}
 
+#opaque {
+  display:block;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  background-color: black;
+  opacity: 0.3;
+}
+
+.search-bar {
+  display: flex;
+  height: 25px;
+  padding-bottom: 10px;
+  padding-top:10px;
+  margin-left: 50%;
+}
+
+.lucid-SearchField-Icon-container {
+  display: inline;
+}
+
+.Grid-Header {
+  background-color: #cce996;
+}
+
+.Grid-Header .Buttons {
+  display: flex;
+  justify-content: space-between;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 10px 0;
+}
+
+.lucid-OverlayWrapper-message-container {
+  color: white;
+}

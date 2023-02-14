@@ -4,7 +4,6 @@ import { ExcelRenderer } from "react-excel-renderer";
 import {DropzoneOptions, useDropzone} from "react-dropzone";
 
 const StyledDropBox = styled.div`
-  padding: 2rem;
   cursor: pointer;
   border: black 2px dotted;
   &:hover {
@@ -45,7 +44,7 @@ function MyDropzone({ set }: IDropzoneProps) {
         <StyledDropBox {...getRootProps()}>
             <input {...getInputProps()} />
             <p>Drag 'n' drop some files here, or click to select files</p>
-            {name && <h2>{name}</h2>}
+            {name && <h3>{name}</h3>}
         </StyledDropBox>
     );
 }
