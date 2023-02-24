@@ -6,7 +6,7 @@ import {checkIn, exportData, formatData, getSearchResults} from "./Utils/DataTab
 import {COLUMN_FIELD, IDataRow} from "./Interfaces/interfaces";
 import DataTable from "lucid-ui/dist/esm/components/DataTable/DataTable";
 import ResultOverlay, {IProps} from "./Components/ResultOverlay";
-import {CloseIcon, SearchField} from "lucid-ui";
+import {SearchField} from "lucid-ui";
 import {getData} from "./api/bestSheetApi";
 
 const Home = () => {
@@ -21,7 +21,6 @@ const Home = () => {
         const [searchResult, setSearchResult] = useState([] as IDataRow[])
         let tempvar = 0;
         useEffect(() => {
-            console.log('useEffect')
             if (tempvar === 0) {
                 getData().then((res: any) => {
                     const data = _.flatten(res.data) as unknown as IDataRow
