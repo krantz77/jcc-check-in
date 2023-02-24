@@ -105,3 +105,15 @@
 .lucid-OverlayWrapper-message-container {
   color: white;
 }
+
+.table-row-deny {
+  color: red;
+}
+
+.lucid-Table-is-disabled {
+  color: blue;
+}
+
+.lucid-Table-is-active {
+  color: red;
+}
