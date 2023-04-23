@@ -2,11 +2,11 @@ import React, {useEffect, useMemo, useState} from 'react';
 import logo from './logo.png';
 import './App.css';
 import _ from "lodash"
-import {checkIn, exportData, formatData, getSearchResults} from "./Utils/DataTable.util";
+import {checkIn, checkOut, exportData, formatData, getSearchResults, getTally} from "./Utils/DataTable.util";
 import {COLUMN_FIELD, IDataRow} from "./Interfaces/interfaces";
 import DataTable from "lucid-ui/dist/esm/components/DataTable/DataTable";
 import ResultOverlay, {IProps} from "./Components/ResultOverlay";
-import {SearchField} from "lucid-ui";
+import {Paginator, SearchField} from "lucid-ui";
 import {getData} from "./api/bestSheetApi";
 
 const Home = () => {
@@ -14,27 +14,32 @@ const Home = () => {
         const [dataFormatted, setDataFormatted] = useState( [] as unknown as IDataRow[]);
         const [selected, setSelected] = useState('-1');
         const [checkInDisabled, setCheckInDisabled] = useState(true);
+        const [checkOutDisabled, setCheckOutDisabled] = useState(true);
         const [editDisabled, setEditDisabled] = useState(true);
         const [showOverlay, setShowOverlay] = useState(false as boolean);
         const [searchValue, setSearchValue] = useState('' as string)
         const [canEdit, setCanEdit] = useState(false as boolean);
-        const [searchResult, setSearchResult] = useState([] as IDataRow[])
+        const [searchResult, setSearchResult] = useState([] as IDataRow[]);
+        const [tally, setTally] = useState(0);
+        const [index, setIndex] = useState(0);
         let tempvar = 0;
         useEffect(() => {
             if (tempvar === 0) {
                 getData().then((res: any) => {
                     const data = _.flatten(res.data) as unknown as IDataRow
-                    const formatRetrievedData = formatData(data);
+                    const formatRetrievedData = formatData(data, tally, setTally as ()=> {});
                     setDataFormatted(formatRetrievedData)
+                    setTally(getTally(formatRetrievedData))
+
                 })
                 tempvar = 1;
             }
-
         }, [data])
 
         const selectColumn = (index: IDataRow) => {
             setEditDisabled(selected === index.UID);
             setCheckInDisabled(selected === index.UID || index.visited_in_last_week === "Yes")
+            setCheckOutDisabled(selected === index.UID )
             const swapSelected = _.map(_.isEmpty(searchResult) ? dataFormatted : searchResult, (row) => {
                 if (index.UID === row.UID) {
                     return {
@@ -67,13 +72,19 @@ const Home = () => {
             setCheckInDisabled: (value: boolean) => {
                 setCheckInDisabled(value)
             },
+            setCheckOutDisabled: (value: boolean) => {
+                setCheckOutDisabled(value)
+            },
             setSearchValue: (value: any) => {
                 setSearchValue(value)
             },
             searchResult,
-            setSearchResult
+            setSearchResult,
+            setTally,
+            tally
         }
-        return (
+        const lengthOfData = dataFormatted.length? dataFormatted.length : 0;
+    return (
             <div className="App">
                 {showOverlay &&
                 <div id="opaque"></div>
@@ -85,15 +96,17 @@ const Home = () => {
                     </div>
                 </header>
                 <div className="Grid-Header">
+                    <div>
+                        This Week's Tally: {tally}
+                    </div>
                     <div className="Buttons">
-                        <button onClick={() => {
-                            exportData(dataFormatted)
-                        }}>
-                            Export
-                        </button>
                         <button disabled={checkInDisabled}
-                                onClick={() => checkIn(selected, dataFormatted as IDataRow[], setDataFormatted as (data: {}) => {}, setCheckInDisabled as (value: boolean) => {}, searchResult, setSearchResult as (data: {}) => {})}>
+                                onClick={() => checkIn(selected, dataFormatted as IDataRow[], tally, setDataFormatted as (data: {}) => {}, setCheckInDisabled as (value: boolean) => {}, setCheckOutDisabled as (value: boolean) => {},searchResult, setSearchResult as (data: {}) => {},setTally as (tally: {}) => {})}>
                             Check In
+                        </button>
+                        <button disabled={checkOutDisabled}
+                                onClick={() => checkOut(selected, dataFormatted as IDataRow[], tally, setDataFormatted as (data: {}) => {}, setCheckInDisabled as (value: boolean) => {}, setCheckOutDisabled as (value: boolean) => {},searchResult, setSearchResult as (data: {}) => {},setTally as (tally: {}) => {})}>
+                            Check Out
                         </button>
                         <button onClick={() => {
                             setShowOverlay(true);
@@ -106,6 +119,11 @@ const Home = () => {
                             setCanEdit(true)
                         }}>
                             Edit Family
+                        </button>
+                        <button onClick={() => {
+                            exportData(dataFormatted)
+                        }}>
+                            Export
                         </button>
                     </div>
                 </div>
@@ -120,13 +138,17 @@ const Home = () => {
                                     onClick={() => setSearchResult(getSearchResults(searchValue, dataFormatted))}> Submit
                                 </button>
                             </div>
+                            <div className='clear'>
+                                <button
+                                    onClick={() => setSearchResult(getSearchResults('', dataFormatted))}> Clear
+                                </button>
+                            </div>
                         </div>
                         <ResultOverlay {...OverlayProps as IProps}/>
-
                         <div className="data-table">
                             {dataFormatted ? (
                                 <DataTable
-                                    data={_.isEmpty(searchResult) ? dataFormatted : searchResult}
+                                    data={_.isEmpty(searchResult) ? index == 0 ? dataFormatted.slice(0,9) : dataFormatted.slice(index*10, index*10+9) : searchResult}
                                     isSelectable
                                     onSelect={(index) => {
                                         setSelected(index.UID);
@@ -138,12 +160,15 @@ const Home = () => {
                                     {_.map(COLUMN_FIELD, (name) => {
                                         return (
                                             <DataTable.Column field={`${name}`}> {name} </DataTable.Column>)
-
                                     })}
                                 </DataTable>
                             ) : (
                                 ""
                             )}
+                            <Paginator onPageSelect={(index:number) => {setIndex(index)}}
+                                       selectedPageIndex={index}
+                                       totalCount={lengthOfData}
+                            />
                         </div>
                     </p>
                 </div>
@@ -158,4 +183,4 @@ const Home = () => {
         );
     }
 
-export default Home;
+export default React.memo(Home);

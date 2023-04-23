@@ -6,6 +6,8 @@
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
     max-width:8%;
+    width:99px;
+    height:99px;
     height:auto;
   }
 }

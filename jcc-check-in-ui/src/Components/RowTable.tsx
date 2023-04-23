@@ -30,4 +30,4 @@ const RowTable = (props: IRowTableProps) => {
     )
 }
 
-export default RowTable
+export default React.memo(RowTable);

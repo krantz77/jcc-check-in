@@ -9,16 +9,19 @@ export interface IProps {
     searchValue?: string,
     isShown: boolean,
     canEdit: boolean,
+    tally: number
     setShowOverlay(value: boolean): any,
     dataFormatted: IDataRow[],
     setDataFormatted(value: IDataRow[]): any,
     setCheckInDisabled(value: boolean):any,
+    setCheckOutDisabled(value: boolean):any,
     setSearchValue(value: any):any,
     searchResult: IDataRow[],
     setSearchResult(value: IDataRow[]):any,
+    setTally(tally: number):any,
 }
 const ResultOverlay: React.FC<IProps> = (props:IProps) => {
-    const {searchValue = null, isShown, canEdit, setShowOverlay, dataFormatted, setDataFormatted, setCheckInDisabled, setSearchValue, searchResult, setSearchResult} = props
+    const {searchValue = null, isShown, canEdit, setShowOverlay, dataFormatted, setDataFormatted, setCheckInDisabled, setCheckOutDisabled, setSearchValue, searchResult, setSearchResult, setTally, tally} = props
     const [editedUser, setEditedUser] = useState({})
     const user: IDataRow | null = searchValue ?_.find(dataFormatted, (row) => {
         if(row.UID || row.family_surname) {
@@ -45,8 +48,8 @@ const ResultOverlay: React.FC<IProps> = (props:IProps) => {
                     <button onClick={() =>
                     {
                         setShowOverlay(false);
-                        canEdit?  submitUser(editedUser, user, dataFormatted, setDataFormatted as (data: {}) => {}, setEditedUser as (() => {})):
-                            checkIn(user, dataFormatted as IDataRow[], setDataFormatted as (data: {}) => {}, setCheckInDisabled as (value: {}) => {}, searchResult as IDataRow[], setSearchResult as (data: {}) => {});
+                        canEdit?  submitUser(editedUser, user, dataFormatted, setDataFormatted as (data: {}) => {}, setEditedUser as (() => {}), setTally):
+                            checkIn(user, dataFormatted as IDataRow[], tally, setDataFormatted as (data: {}) => {}, setCheckInDisabled as (value: {}) => {}, setCheckOutDisabled as (value: {}) => {}, searchResult as IDataRow[], setSearchResult as (data: {}) => {}, setTally);
                         setSearchValue(null)
 
                     }
@@ -62,4 +65,4 @@ const ResultOverlay: React.FC<IProps> = (props:IProps) => {
         </Overlay>
     )
 }
-export default ResultOverlay
+export default React.memo(ResultOverlay);

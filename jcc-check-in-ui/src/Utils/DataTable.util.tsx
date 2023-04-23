@@ -1,12 +1,11 @@
-import {COLUMN_INDEX, COLUMN_NAMES, COLUMN_ORDER, IDataRow, IRow} from "../Interfaces/interfaces"
+import {COLUMN_INDEX, IDataRow,} from "../Interfaces/interfaces"
 import _ from "lodash";
 import { format } from 'date-fns';
-import  * as XLSX from "xlsx" ;
+//import  * as XLSX from "xlsx" ;
+// @ts-ignore
+import {json_to_sheet, book_new, book_append_sheet, writeFile} from "xlsx";
 import {writeData, writeDataNew} from "../api/bestSheetApi";
 
-export const setDataToFormatted = (data: IRow[], setDataFormatted: (value: unknown[]) => void) => {
-    setDataFormatted(formatData(data as any));
-}
 const checkLastVisit = (date: string) => {
     if(date === null) {
         return 'No'
@@ -14,16 +13,20 @@ const checkLastVisit = (date: string) => {
     const today = new Date().getTime();
     const lastVisit = Date.parse(date)
     const difference = (today - lastVisit)/(1000*3600*24);
-    return difference <= 7 ? 'Yes' : 'No'
+    const result = difference <= 7 ? 'Yes' : 'No'
+
+    return result
 }
-export const formatData = (rows: any,) => {
+export const formatData = (rows: any, tally: number, setTally: (number: any) => {}) => {
         const data: IDataRow[] = _.map(rows, (row) => {
             const properties = Object.keys(row);
             const rowObj = _.map(properties, (key) => row[key])
             const visited_in_last_week = rowObj[COLUMN_INDEX.visited_in_last_week] ? checkLastVisit(rowObj[COLUMN_INDEX.last_visit]) : 'No';
+            setTally(tally + 1)
             return {
                 UID: rowObj[COLUMN_INDEX.UID] ? rowObj[COLUMN_INDEX.UID]: -1,
                 family_surname: rowObj[COLUMN_INDEX.family_surname] ? rowObj[COLUMN_INDEX.family_surname]:  [],
+                name: rowObj[COLUMN_INDEX.name] ? rowObj[COLUMN_INDEX.name] :[],
                 family_member_two: rowObj[COLUMN_INDEX.family_member_two] ? rowObj[COLUMN_INDEX.family_member_two]: [],
                 family_member_three: rowObj[COLUMN_INDEX.family_member_three] ? rowObj[COLUMN_INDEX.family_member_three]: [],
                 last_visit: rowObj[COLUMN_INDEX.last_visit],
@@ -59,7 +62,7 @@ const formatForWrite = (row: IDataRow) => {
     }
 }
 
-export const submitUser = (editedUser: any, row: IDataRow | null, data: any, setDataFormatted: (data: unknown[]) => {}, setEditedUser: (value: {}) => {}) => {
+export const submitUser = (editedUser: any, row: IDataRow | null, data: any, setDataFormatted: (data: unknown[]) => {}, setEditedUser: (value: {}) => {}, setTally: (tally:number) => {}) => {
     if(row === null) {
         const formatted = formatForWrite(editedUser);
         writeDataNew(formatted).then();
@@ -88,10 +91,11 @@ export const submitUser = (editedUser: any, row: IDataRow | null, data: any, set
             }
         })
         setDataFormatted(newData);
+        setTally(getTally(newData))
     }
     setEditedUser({})
 }
-export const checkIn = (user: any, data: any, setDataFormatted: (data: unknown[]) => {}, setCheckInDisabled:(value: boolean) => {}, searchResult: any, setSearchResult: (data: unknown[])=>{}) => {
+export const checkIn = (user: any, data: any, tally:number, setDataFormatted: (data: unknown[]) => {}, setCheckInDisabled:(value: boolean) => {}, setCheckOutDisabled:(value: boolean) => {}, searchResult: any, setSearchResult: (data: unknown[])=>{}, setTally:(tally:number)=>{}) => {
    const result =_.map(_.isEmpty(searchResult) ? data : searchResult, (row) => {
         if(row.UID == user) {
             const result = {
@@ -102,21 +106,46 @@ export const checkIn = (user: any, data: any, setDataFormatted: (data: unknown[]
                 isDisabled: true,
                 previous_visits: _.isEmpty(row.last_visit) ? row.previous_visits : [row.previous_visits, row.last_visit]
             }
+            setTally(tally +1)
             writeData(formatForWrite(result)).then();
             return result
         }
         return row
     })
     _.isEmpty(searchResult) ? setDataFormatted(result) : setSearchResult(result)
-    setCheckInDisabled(true)
+    setCheckInDisabled(true);
+   setCheckOutDisabled(false)
 }
+
+export const checkOut = (user: any, data: any, tally:number, setDataFormatted: (data: unknown[]) => {}, setCheckInDisabled:(value: boolean) => {}, setCheckOutDisabled:(value: boolean) => {}, searchResult: any, setSearchResult: (data: unknown[])=>{}, setTally:(tally:number)=>{}) => {
+    const result =_.map(_.isEmpty(searchResult) ? data : searchResult, (row) => {
+        if(row.UID == user) {
+            const result = {
+                ...row,
+                last_visit: '--',
+                visited_in_last_week: 'No',
+                isSelected: false,
+                isDisabled: true,
+                previous_visits: _.isEmpty(row.last_visit) ? row.previous_visits : [row.previous_visits, row.last_visit]
+            }
+            setTally(tally +1)
+            writeData(formatForWrite(result)).then();
+            return result
+        }
+        return row
+    })
+    _.isEmpty(searchResult) ? setDataFormatted(result) : setSearchResult(result)
+    setCheckInDisabled(false);
+    setCheckOutDisabled(true);
+};
+
 export const exportData = (data: any) => {
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb =  XLSX.utils.book_new();
+    const ws = json_to_sheet(data);
+    const wb =  book_new();
     const path = require('path');
     const filePath = path.join(__dirname, 'Data/example_data.xlsx');
-    XLSX.utils.book_append_sheet(wb, ws, "Example_Data");
-    XLSX.writeFile(wb, filePath)
+    book_append_sheet(wb, ws, "Example_Data");
+    writeFile(wb, filePath)
 }
 
 
@@ -128,4 +157,14 @@ export const getSearchResults = (searchValue: string, data: IDataRow[]) => {
         }
     })
     return _.without(result, undefined)as IDataRow[]
+}
+
+export const getTally = (data: IDataRow[]) => {
+    let result = 0;
+    _.forEach(data, (row) => {
+        if (row.visited_in_last_week === 'Yes') {
+            result = result +1
+        }
+    })
+    return result
 }

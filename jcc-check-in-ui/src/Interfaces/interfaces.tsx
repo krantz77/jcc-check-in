@@ -1,23 +1,7 @@
-export interface IRow {
-    id: number;
-    householdMembers?: IClient[];
-    lastVisit: string;
-    visitedInLastWeek: string;
-    address?: string;
-    hometown?: string;
-    isSelected?: boolean
-}
-
-export interface IClient {
-    firstName?: string;
-    lastName?: string;
-    age?: number;
-    gender?: string;
-}
-
 export interface IDataRow {
     UID: string;
     family_surname?: string;
+    name?: string;
     family_member_two?: string;
     family_member_three?: string;
     number_of_kids?: number;
@@ -34,6 +18,7 @@ export interface IDataRow {
 export enum COLUMN_FIELD {
     UID='UID',
     family_surname= 'family_surname',
+    name= 'name',
     number_of_kids= 'number_of_kids',
     family_member_two= 'family_member_two',
     family_member_three= 'family_member_three',
@@ -64,6 +49,7 @@ export enum COLUMN_NAMES {
 export enum COLUMN_INDEX {
     UID= 0,
     family_surname= 1,
+    name= 2,
     number_of_kids= 3,
     family_member_two=2,
     family_member_three=4,
