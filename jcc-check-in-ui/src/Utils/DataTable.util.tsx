@@ -152,7 +152,7 @@ export const exportData = (data: any) => {
 
 export const getSearchResults = (searchValue: string, data: IDataRow[], setIndex = (number: number) => {}) => {
     const result = _.map(data, (row) => {
-        const options = row.Number + row.surname + row.second_member;
+        const options = row.Number + row.surname + row.second_member +row.name;
         if(_.includes(_.toLower(options), _.toLower(searchValue))) {
             return row
         }
