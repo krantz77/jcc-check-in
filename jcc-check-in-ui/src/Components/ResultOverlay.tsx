@@ -24,8 +24,8 @@ const ResultOverlay: React.FC<IProps> = (props:IProps) => {
     const {searchValue = null, isShown, canEdit, setShowOverlay, dataFormatted, setDataFormatted, setCheckInDisabled, setCheckOutDisabled, setSearchValue, searchResult, setSearchResult, setTally, tally} = props
     const [editedUser, setEditedUser] = useState({})
     const user: IDataRow | null = searchValue ?_.find(dataFormatted, (row) => {
-        if(row.UID || row.family_surname) {
-            if (row.UID == searchValue || row.family_surname == searchValue) {
+        if(row.Number || row.surname) {
+            if (row.Number == searchValue || row.surname == searchValue) {
                 return row as unknown as IDataRow
             }
         }

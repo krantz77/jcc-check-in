@@ -24,21 +24,21 @@ export const formatData = (rows: any, tally: number, setTally: (number: any) => 
             const visited_in_last_week = rowObj[COLUMN_INDEX.visited_in_last_week] ? checkLastVisit(rowObj[COLUMN_INDEX.last_visit]) : 'No';
             setTally(tally + 1)
             return {
-                UID: rowObj[COLUMN_INDEX.UID] ? rowObj[COLUMN_INDEX.UID]: -1,
-                family_surname: rowObj[COLUMN_INDEX.family_surname] ? rowObj[COLUMN_INDEX.family_surname]:  [],
+                Number: rowObj[COLUMN_INDEX.Number] ? rowObj[COLUMN_INDEX.Number]: -1,
+                surname: rowObj[COLUMN_INDEX.surname] ? rowObj[COLUMN_INDEX.surname]:  [],
                 name: rowObj[COLUMN_INDEX.name] ? rowObj[COLUMN_INDEX.name] :[],
-                family_member_two: rowObj[COLUMN_INDEX.family_member_two] ? rowObj[COLUMN_INDEX.family_member_two]: [],
-                family_member_three: rowObj[COLUMN_INDEX.family_member_three] ? rowObj[COLUMN_INDEX.family_member_three]: [],
+                second_member: rowObj[COLUMN_INDEX.second_member] ? rowObj[COLUMN_INDEX.second_member]: [],
                 last_visit: rowObj[COLUMN_INDEX.last_visit],
                 visited_in_last_week,
                 number_of_kids: rowObj[COLUMN_INDEX.number_of_kids] ? rowObj[COLUMN_INDEX.number_of_kids]: '--',
-                address_street: rowObj[COLUMN_INDEX.address_street] ? rowObj[COLUMN_INDEX.address_street]: '--',
-                crossing_city: rowObj[COLUMN_INDEX.crossing_city] ? rowObj[COLUMN_INDEX.crossing_city]: '--',
+                address_street: rowObj[COLUMN_INDEX.address] ? rowObj[COLUMN_INDEX.address]: '--',
+                crossing_city: rowObj[COLUMN_INDEX.city] ? rowObj[COLUMN_INDEX.city]: '--',
                 border_crossing: rowObj[COLUMN_INDEX.border_crossing] ? rowObj[COLUMN_INDEX.border_crossing]: '--',
                 comments: rowObj[COLUMN_INDEX.comments] ? rowObj[COLUMN_INDEX.comments]: '--',
                 deny: rowObj[COLUMN_INDEX.deny] ? rowObj[COLUMN_INDEX.deny]: '--',
+                year_of_birth: rowObj[COLUMN_INDEX.year_of_birth] ? rowObj[COLUMN_INDEX.year_of_birth] : '--',
                 isDisabled: visited_in_last_week === "Yes" ? true : false,
-                isActive: rowObj[COLUMN_INDEX.deny] === "Deny" ? true : false,
+                isActive: rowObj[COLUMN_INDEX.deny] === "Deny" ||  rowObj[COLUMN_INDEX.deny] === "DENY" || rowObj[COLUMN_INDEX.deny] === "deny"? true : false,
             }
         })
         return data
@@ -46,14 +46,15 @@ export const formatData = (rows: any, tally: number, setTally: (number: any) => 
 
 const formatForWrite = (row: IDataRow) => {
     return {
-        'UID': row.UID ? row.UID : '--',
-        'Family Surname': row.family_surname ? row.family_surname :'--',
-        'Number of Kids/Кількість дітей': row.number_of_kids ? row.number_of_kids : '--',
-        'Family Member Two': row.family_member_two ? row.family_member_two : '--',
-        'Family Member Three': row.family_member_three ? row.family_member_three : '--',
-        'Address - Street/ Вулиця': row.address_street? row.address_street : '--',
-        'Border Crossing Date/ Дата перетину кордону': row.border_crossing ? row.border_crossing : '--',
-        'City where came from/ Місто походження': row.crossing_city ? row.crossing_city : '--',
+        'Number': row.Number ? row.Number : '--',
+        'Surname': row.surname ? row.surname :'--',
+        'Name': row.name ? row.name : '--',
+        'Second Member': row.second_member ? row.second_member : '--',
+        'Number of Kids': row.number_of_kids ? row.number_of_kids : '--',
+        'Address': row.address? row.address : '--',
+        'City': row.city? row.city: '--',
+        'Border Crossing': row.border_crossing ? row.border_crossing : '--',
+        'Year of Birth': row.year_of_birth ? row.year_of_birth : '--',
         'Last Visit': row.last_visit? row.last_visit  : '--',
         'Visited in Last Week': row.visited_in_last_week? row.visited_in_last_week : '--',
         'Comments': row.comments ? row.comments : '--',
@@ -71,7 +72,7 @@ export const submitUser = (editedUser: any, row: IDataRow | null, data: any, set
     else {
         const result = {...row, ...editedUser}
         const newData = _.map(data, (oldRow) => {
-            if (oldRow.UID === row.UID) {
+            if (oldRow.Number === row.Number) {
                 const res = {
                     ...oldRow,
                     ...result,
@@ -80,7 +81,7 @@ export const submitUser = (editedUser: any, row: IDataRow | null, data: any, set
                     ...res,
                     visited_in_last_week: checkLastVisit(res.last_visit),
                     isDisabled: res.visited_in_last_week === "Yes" ? true : false,
-                    isActive: res.deny === "Deny" || res.deny === "deny"  ? true : false,
+                    isActive: res.deny === "Deny" || res.deny === "deny" || res.deny === "DENY"  ? true : false,
                 }
                 const formatted = formatForWrite(finalRes);
                 writeData(formatted).then();
@@ -97,7 +98,7 @@ export const submitUser = (editedUser: any, row: IDataRow | null, data: any, set
 }
 export const checkIn = (user: any, data: any, tally:number, setDataFormatted: (data: unknown[]) => {}, setCheckInDisabled:(value: boolean) => {}, setCheckOutDisabled:(value: boolean) => {}, searchResult: any, setSearchResult: (data: unknown[])=>{}, setTally:(tally:number)=>{}) => {
    const result =_.map(_.isEmpty(searchResult) ? data : searchResult, (row) => {
-        if(row.UID == user) {
+        if(row.Number == user) {
             const result = {
                 ...row,
                 last_visit: format(new Date(), 'yyyy-MM-dd'),
@@ -119,7 +120,7 @@ export const checkIn = (user: any, data: any, tally:number, setDataFormatted: (d
 
 export const checkOut = (user: any, data: any, tally:number, setDataFormatted: (data: unknown[]) => {}, setCheckInDisabled:(value: boolean) => {}, setCheckOutDisabled:(value: boolean) => {}, searchResult: any, setSearchResult: (data: unknown[])=>{}, setTally:(tally:number)=>{}) => {
     const result =_.map(_.isEmpty(searchResult) ? data : searchResult, (row) => {
-        if(row.UID == user) {
+        if(row.Number == user) {
             const result = {
                 ...row,
                 last_visit: '--',
@@ -149,13 +150,14 @@ export const exportData = (data: any) => {
 }
 
 
-export const getSearchResults = (searchValue: string, data: IDataRow[]) => {
+export const getSearchResults = (searchValue: string, data: IDataRow[], setIndex = (number: number) => {}) => {
     const result = _.map(data, (row) => {
-        const options = row.UID + row.family_surname + row.family_member_two + row.family_member_three
+        const options = row.Number + row.surname + row.second_member;
         if(_.includes(_.toLower(options), _.toLower(searchValue))) {
             return row
         }
     })
+    setIndex(0)
     return _.without(result, undefined)as IDataRow[]
 }
 

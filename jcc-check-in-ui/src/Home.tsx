@@ -37,11 +37,11 @@ const Home = () => {
         }, [data])
 
         const selectColumn = (index: IDataRow) => {
-            setEditDisabled(selected === index.UID);
-            setCheckInDisabled(selected === index.UID || index.visited_in_last_week === "Yes")
-            setCheckOutDisabled(selected === index.UID )
+            setEditDisabled(selected === index.Number);
+            setCheckInDisabled(selected === index.Number || index.visited_in_last_week === "Yes")
+            setCheckOutDisabled(selected === index.Number )
             const swapSelected = _.map(_.isEmpty(searchResult) ? dataFormatted : searchResult, (row) => {
-                if (index.UID === row.UID) {
+                if (index.Number === row.Number) {
                     return {
                         ...row,
                         isSelected: index.isSelected ? false : true,
@@ -53,7 +53,7 @@ const Home = () => {
                     }
                 }
             }) as IDataRow[];
-            setSearchValue(index.UID)
+            setSearchValue(index.Number)
             _.isEmpty(searchResult) ? setDataFormatted(swapSelected) : setSearchResult(swapSelected)
 
         }
@@ -83,7 +83,7 @@ const Home = () => {
             setTally,
             tally
         }
-        const lengthOfData = dataFormatted.length? dataFormatted.length : 0;
+        const lengthOfData = _.isEmpty(searchResult)? dataFormatted.length? dataFormatted.length : 0: searchResult.length;
     return (
             <div className="App">
                 {showOverlay &&
@@ -132,15 +132,15 @@ const Home = () => {
                         <div className='search-bar'>
                             Search by surname or UID:
                             <SearchField onChangeDebounced={(value: string) => setSearchValue(value)}
-                                         onSubmit={() => setSearchResult(getSearchResults(searchValue, dataFormatted))}/>
+                                         onSubmit={() => setSearchResult(getSearchResults(searchValue, dataFormatted, setIndex))}/>
                             <div className='submit'>
                                 <button
-                                    onClick={() => setSearchResult(getSearchResults(searchValue, dataFormatted))}> Submit
+                                    onClick={() => setSearchResult(getSearchResults(searchValue, dataFormatted, setIndex))}> Submit
                                 </button>
                             </div>
                             <div className='clear'>
                                 <button
-                                    onClick={() => setSearchResult(getSearchResults('', dataFormatted))}> Clear
+                                    onClick={() => setSearchResult(getSearchResults('', dataFormatted, setIndex))}> Clear
                                 </button>
                             </div>
                         </div>
@@ -148,10 +148,10 @@ const Home = () => {
                         <div className="data-table">
                             {dataFormatted ? (
                                 <DataTable
-                                    data={_.isEmpty(searchResult) ? index == 0 ? dataFormatted.slice(0,9) : dataFormatted.slice(index*10, index*10+9) : searchResult}
+                                    data={_.isEmpty(searchResult) ? index == 0 ? dataFormatted.slice(0,19) : dataFormatted.slice((index+1)*10, (index+1)*10+20) : index == 0 ? searchResult.slice(0,19) : searchResult.slice((index+1)*10, (index+1)*10+20)}
                                     isSelectable
                                     onSelect={(index) => {
-                                        setSelected(index.UID);
+                                        setSelected(index.Number);
                                         selectColumn(index)
                                     }}
                                     emptyCellText={"--"}
